@@ -61,6 +61,412 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-侧边栏实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/10/侧边栏实现/" class="article-date">
+  <time datetime="2015-06-10T09:59:27.000Z" itemprop="datePublished">2015-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/10/侧边栏实现/">侧边栏实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一、效果图">一、效果图</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;话不多说，直接上图<br>    <div align="center"><br>        <img src="http://i.imgur.com/nmnIy4h.png" width="30%" height="30%" alt="效果图" align="center"><br>    </div></p>
+<h1 id="二、布局">二、布局</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;activity采用FrameLayout，点击Home图标的时候，显示侧边栏。而侧边栏布局采用LinearLayout，左边ListView，右边一个采用一个View标签。</p>
+<p>layout_main.xml</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">FrameLayout</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:layout_width</span>=<span class="value">"fill_parent"</span>
+<span class="attribute">android:layout_height</span>=<span class="value">"fill_parent"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">TextView</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"fill_parent"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"wrap_content"</span>
+    <span class="attribute">android:layout_gravity</span>=<span class="value">"center|center_horizontal"</span>
+    <span class="attribute">android:text</span>=<span class="value">"点击左上角图标左边的箭头,就可以看到侧边栏效果了!!!"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">com.duguang.baseanimation.ui.customview.ribbomenu.RibbonMenuView</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/ribbonMenuView1"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span> /&gt;</span>
+
+<span class="tag">&lt;/<span class="title">FrameLayout</span>&gt;</span>
+</code></pre><p>layout_menu.xml</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">LinearLayout</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:layout_width</span>=<span class="value">"match_parent"</span>
+<span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+<span class="attribute">android:orientation</span>=<span class="value">"horizontal"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">ListView</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/rbm_listview"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"200dp"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:background</span>=<span class="value">"#303030"</span>
+    <span class="attribute">android:cacheColorHint</span>=<span class="value">"#00000000"</span>
+    <span class="attribute">android:visibility</span>=<span class="value">"gone"</span> &gt;</span>
+<span class="tag">&lt;/<span class="title">ListView</span>&gt;</span>
+
+<span class="comment">&lt;!-- simple drop shadow --&gt;</span>
+
+<span class="tag">&lt;<span class="title">View</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/rbm_outside_view"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"0dp"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:layout_weight</span>=<span class="value">"1"</span>
+    <span class="attribute">android:clickable</span>=<span class="value">"true"</span>
+    <span class="attribute">android:visibility</span>=<span class="value">"gone"</span> /&gt;</span>
+
+<span class="tag">&lt;/<span class="title">LinearLayout</span>&gt;</span>
+</code></pre><h1 id="三、侧边栏实现">三、侧边栏实现</h1><pre><code><span class="keyword">package</span> com.duguang.baseanimation.ui.customview.ribbomenu;
+
+<span class="keyword">import</span> java.util.ArrayList;
+
+<span class="keyword">import</span> org.xmlpull.v1.XmlPullParser;
+
+<span class="keyword">import</span> android.content.Context;
+<span class="keyword">import</span> android.content.res.XmlResourceParser;
+<span class="keyword">import</span> android.os.Parcel;
+<span class="keyword">import</span> android.os.Parcelable;
+<span class="keyword">import</span> android.util.AttributeSet;
+<span class="keyword">import</span> android.util.Log;
+<span class="keyword">import</span> android.view.LayoutInflater;
+<span class="keyword">import</span> android.view.View;
+<span class="keyword">import</span> android.view.ViewGroup;
+<span class="keyword">import</span> android.view.animation.AnimationUtils;
+<span class="keyword">import</span> android.widget.AdapterView;
+<span class="keyword">import</span> android.widget.AdapterView.OnItemClickListener;
+<span class="keyword">import</span> android.widget.BaseAdapter;
+<span class="keyword">import</span> android.widget.ImageView;
+<span class="keyword">import</span> android.widget.LinearLayout;
+<span class="keyword">import</span> android.widget.ListView;
+<span class="keyword">import</span> android.widget.TextView;
+
+<span class="keyword">import</span> com.duguang.baseanimation.R;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RibbonMenuView</span> <span class="keyword">extends</span> <span class="title">LinearLayout</span> </span>{
+
+    <span class="keyword">private</span> ListView rbmListView;
+    <span class="keyword">private</span> View rbmOutsideView;
+
+    <span class="keyword">private</span> iRibbonMenuCallback callback;
+
+    <span class="keyword">private</span> <span class="keyword">static</span> ArrayList&lt;RibbonMenuItem&gt; menuItems;
+
+    <span class="function"><span class="keyword">public</span> <span class="title">RibbonMenuView</span><span class="params">(Context context)</span> </span>{
+        <span class="keyword">super</span>(context);
+        load();
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="title">RibbonMenuView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>{
+        <span class="keyword">super</span>(context, attrs);
+        load();
+    }
+
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">load</span><span class="params">()</span> </span>{
+        <span class="keyword">if</span> (isInEditMode())
+            <span class="keyword">return</span>;
+        inflateLayout();
+        initUi();
+    }
+
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">inflateLayout</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span> {
+            LayoutInflater.from(getContext()).inflate(R.layout.activity_custom_ribbon_menu, <span class="keyword">this</span>, <span class="keyword">true</span>);
+        } <span class="keyword">catch</span> (Exception e) {
+
+        }
+    }
+
+    <span class="comment">/** 初始view，并注册点击事件 */</span>
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initUi</span><span class="params">()</span> </span>{
+
+        rbmListView = (ListView) findViewById(R.id.rbm_listview);
+        rbmOutsideView = (View) findViewById(R.id.rbm_outside_view);
+
+        rbmOutsideView.setOnClickListener(<span class="keyword">new</span> OnClickListener() {<span class="comment">// 菜单其他部分点击将隐藏菜单</span>
+
+                    <span class="annotation">@Override</span>
+                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+                        hideMenu();
+
+                    }
+                });
+
+        rbmListView.setOnItemClickListener(<span class="keyword">new</span> OnItemClickListener() {<span class="comment">// 点击菜单将回调，并隐藏菜单</span>
+
+                    <span class="annotation">@Override</span>
+                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onItemClick</span><span class="params">(AdapterView&lt;?&gt; parent, View view,
+                            <span class="keyword">int</span> position, <span class="keyword">long</span> id)</span> </span>{
+
+                        <span class="keyword">if</span> (callback != <span class="keyword">null</span>)
+                            callback.RibbonMenuItemClick(menuItems.get(position).id);
+
+                        hideMenu();
+                    }
+
+                });
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMenuClickCallback</span><span class="params">(iRibbonMenuCallback callback)</span> </span>{
+        <span class="keyword">this</span>.callback = callback;
+    }
+
+    <span class="comment">/** 传入一个菜单资源文件id，然后解析菜单资源文件，获取相应菜单信息 */</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMenuItems</span><span class="params">(<span class="keyword">int</span> menu)</span> </span>{
+
+        parseXml(menu);
+
+        <span class="keyword">if</span> (menuItems != <span class="keyword">null</span> &amp;&amp; menuItems.size() &gt; <span class="number">0</span>) {
+            rbmListView.setAdapter(<span class="keyword">new</span> Adapter());
+
+        }
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setBackgroundResource</span><span class="params">(<span class="keyword">int</span> resource)</span> </span>{
+        rbmListView.setBackgroundResource(resource);
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showMenu</span><span class="params">()</span> </span>{
+        rbmOutsideView.setVisibility(View.VISIBLE);
+
+        rbmListView.setVisibility(View.VISIBLE);
+        rbmListView.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.rbm_in_from_left));
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hideMenu</span><span class="params">()</span> </span>{
+
+        rbmOutsideView.setVisibility(View.GONE);
+        rbmListView.setVisibility(View.GONE);
+
+        rbmListView.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                R.anim.rbm_out_to_left));
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">toggleMenu</span><span class="params">()</span> </span>{
+
+        <span class="keyword">if</span> (rbmOutsideView.getVisibility() == View.GONE) {
+            showMenu();
+        } <span class="keyword">else</span> {
+            hideMenu();
+        }
+    }
+
+    <span class="comment">/** 解析menu,将得到的menuItem存入menuItems中 */</span>
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseXml</span><span class="params">(<span class="keyword">int</span> menu)</span> </span>{
+        menuItems = <span class="keyword">new</span> ArrayList&lt;RibbonMenuView.RibbonMenuItem&gt;();
+
+        <span class="keyword">try</span> {
+            XmlResourceParser xpp = getResources().getXml(menu);
+            xpp.next();
+
+            <span class="keyword">int</span> eventType = xpp.getEventType();
+            <span class="keyword">while</span> (eventType != XmlPullParser.END_DOCUMENT) {
+                <span class="keyword">if</span> (eventType == XmlPullParser.START_TAG) {
+                    String elemName = xpp.getName();
+                    <span class="keyword">if</span> (elemName.equals(<span class="string">"item"</span>)) {
+                        String textId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"title"</span>);
+                        String iconId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"icon"</span>);
+                        String resId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"id"</span>);
+
+                        Log.d(<span class="string">"ljhtest"</span>, <span class="string">""</span> + textId + <span class="string">" "</span> + iconId + <span class="string">" "</span> + resId);
+
+                        RibbonMenuItem item = <span class="keyword">new</span> RibbonMenuItem();
+                        item.id = Integer.valueOf(resId.replace(<span class="string">"@"</span>, <span class="string">""</span>));
+                        item.text = resourceIdToString(textId);
+                        item.icon = Integer.valueOf(iconId.replace(<span class="string">"@"</span>, <span class="string">""</span>));
+
+                        menuItems.add(item);
+                    }
+                }
+                eventType = xpp.next();
+            }
+        } <span class="keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    <span class="function"><span class="keyword">private</span> String <span class="title">resourceIdToString</span><span class="params">(String text)</span> </span>{
+        <span class="keyword">if</span> (!text.contains(<span class="string">"@"</span>)) {
+            <span class="keyword">return</span> text;
+        }
+        <span class="keyword">else</span> {
+            String id = text.replace(<span class="string">"@"</span>, <span class="string">""</span>);
+            <span class="keyword">return</span> getResources().getString(Integer.valueOf(id));
+        }
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isMenuVisible</span><span class="params">()</span> </span>{
+        <span class="keyword">return</span> rbmOutsideView.getVisibility() == View.VISIBLE;
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onRestoreInstanceState</span><span class="params">(Parcelable state)</span> </span>{
+        SavedState ss = (SavedState) state;
+        <span class="keyword">super</span>.onRestoreInstanceState(ss.getSuperState());
+
+        <span class="keyword">if</span> (ss.bShowMenu)
+            showMenu();
+        <span class="keyword">else</span>
+            hideMenu();
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">protected</span> Parcelable <span class="title">onSaveInstanceState</span><span class="params">()</span> </span>{
+        Parcelable superState = <span class="keyword">super</span>.onSaveInstanceState();
+        SavedState ss = <span class="keyword">new</span> SavedState(superState);
+
+        ss.bShowMenu = isMenuVisible();
+
+        <span class="keyword">return</span> ss;
+    }
+
+    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SavedState</span> <span class="keyword">extends</span> <span class="title">BaseSavedState</span> </span>{
+        <span class="keyword">boolean</span> bShowMenu;
+
+        SavedState(Parcelable superState) {
+            <span class="keyword">super</span>(superState);
+        }
+
+        <span class="function"><span class="keyword">private</span> <span class="title">SavedState</span><span class="params">(Parcel in)</span> </span>{
+            <span class="keyword">super</span>(in);
+            bShowMenu = (in.readInt() == <span class="number">1</span>);
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel out, <span class="keyword">int</span> flags)</span> </span>{
+            <span class="keyword">super</span>.writeToParcel(out, flags);
+            out.writeInt(bShowMenu ? <span class="number">1</span> : <span class="number">0</span>);
+        }
+
+        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;SavedState&gt; CREATOR = <span class="keyword">new</span> Parcelable.Creator&lt;SavedState&gt;() {
+            <span class="function"><span class="keyword">public</span> SavedState <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>{
+                <span class="keyword">return</span> <span class="keyword">new</span> SavedState(in);
+            }
+
+            <span class="keyword">public</span> SavedState[] newArray(<span class="keyword">int</span> size) {
+                <span class="keyword">return</span> <span class="keyword">new</span> SavedState[size];
+            }
+        };
+    }
+
+    <span class="class"><span class="keyword">class</span> <span class="title">RibbonMenuItem</span> </span>{
+
+        <span class="keyword">int</span> id;
+        String text;
+        <span class="keyword">int</span> icon;
+
+    }
+
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">Adapter</span> <span class="keyword">extends</span> <span class="title">BaseAdapter</span> </span>{
+
+        <span class="keyword">private</span> LayoutInflater inflater;
+
+        <span class="function"><span class="keyword">public</span> <span class="title">Adapter</span><span class="params">()</span> </span>{
+            inflater = LayoutInflater.from(getContext());
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCount</span><span class="params">()</span> </span>{
+
+            <span class="keyword">return</span> menuItems.size();
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> Object <span class="title">getItem</span><span class="params">(<span class="keyword">int</span> position)</span> </span>{
+
+            <span class="keyword">return</span> <span class="keyword">null</span>;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getItemId</span><span class="params">(<span class="keyword">int</span> position)</span> </span>{
+
+            <span class="keyword">return</span> <span class="number">0</span>;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span> </span>{
+
+            <span class="keyword">final</span> ViewHolder holder;
+
+            <span class="keyword">if</span> (convertView == <span class="keyword">null</span> || convertView <span class="keyword">instanceof</span> TextView) {
+                convertView = inflater.inflate(R.layout.activity_custom_ribbon_item, <span class="keyword">null</span>);
+
+                holder = <span class="keyword">new</span> ViewHolder();
+                holder.image = (ImageView) convertView.findViewById(R.id.rbm_item_icon);
+                holder.text = (TextView) convertView.findViewById(R.id.rbm_item_text);
+
+                convertView.setTag(holder);
+
+            }
+            <span class="keyword">else</span> {
+
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.image.setImageResource(menuItems.get(position).icon);
+            holder.text.setText(menuItems.get(position).text);
+
+            <span class="keyword">return</span> convertView;
+        }
+
+        <span class="class"><span class="keyword">class</span> <span class="title">ViewHolder</span> </span>{
+            TextView text;
+            ImageView image;
+
+        }
+
+    }
+
+}
+</code></pre><p>其中侧边栏出现的动画如下：</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">set</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:interpolator</span>=<span class="value">"@android:anim/accelerate_interpolator"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">translate</span>
+    <span class="attribute">android:duration</span>=<span class="value">"150"</span>
+    <span class="attribute">android:fromXDelta</span>=<span class="value">"-20%"</span>
+    <span class="attribute">android:toXDelta</span>=<span class="value">"0%"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">alpha</span>
+    <span class="attribute">android:duration</span>=<span class="value">"150"</span>
+    <span class="attribute">android:fromAlpha</span>=<span class="value">"0.0"</span>
+    <span class="attribute">android:toAlpha</span>=<span class="value">"1.0"</span> /&gt;</span>
+</code></pre><p></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/06/10/侧边栏实现/" data-id="ciaqmacuc000du0yavt9lp55o" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/侧边栏/">侧边栏</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Android批量图片加载-采用二级缓存、异步加载网络图片" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" class="article-date">
@@ -469,7 +875,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" data-id="cianqq5yv000dsoyai70989z8" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" data-id="ciaqmacuh000iu0yaz75nfjx4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/二级缓存/">二级缓存</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图片加载/">图片加载</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a></li></ul>
@@ -509,7 +915,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="cianqq5yy000msoya2i4ro5rz" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="ciaqmacun000qu0yayvjpo0ph" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名/">域名</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名解析/">域名解析</a></li></ul>
@@ -616,7 +1022,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="cianqq5ys0004soya0miublm0" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="ciaqmacu90004u0yahap4s2qu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Exception/">Exception</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集合/">集合</a></li></ul>
@@ -655,7 +1061,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/mytest/" data-id="cianqq5yf0000soyauvyv901v" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/mytest/" data-id="ciaqmactw0000u0ya0hmqodr1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/测试/">测试</a></li></ul>
@@ -702,7 +1108,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/hello-world/" data-id="cianqq5yq0003soyareml2o3s" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/hello-world/" data-id="ciaqmacu60003u0yaxlanmiri" class="article-share-link">Share</a>
       
       
     </footer>
@@ -723,7 +1129,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/测试/">测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/测试/">测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -732,7 +1138,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/测试/" style="font-size: 10px;">测试</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a>
+      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/测试/" style="font-size: 10px;">测试</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a>
     </div>
   </div>
 
@@ -741,7 +1147,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -751,6 +1157,10 @@ public class <span class="type">MemoryCache</span> {
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/06/10/侧边栏实现/">侧边栏实现</a>
+          </li>
         
           <li>
             <a href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/">Android批量图片加载--采用二级缓存、异步加载网络图片</a>
@@ -766,10 +1176,6 @@ public class <span class="type">MemoryCache</span> {
         
           <li>
             <a href="/2015/05/27/mytest/">mytest</a>
-          </li>
-        
-          <li>
-            <a href="/2015/05/27/hello-world/">Hello World</a>
           </li>
         
       </ul>
