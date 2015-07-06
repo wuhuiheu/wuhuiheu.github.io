@@ -61,6 +61,192 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Binder-aidl理解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/06/Binder-aidl理解/" class="article-date">
+  <time datetime="2015-07-06T03:50:59.000Z" itemprop="datePublished">2015-07-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/06/Binder-aidl理解/">Binder-aidl理解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <hr>
+<p>详细可以看这几篇博文：</p>
+<ol>
+<li><a href="http://blog.csdn.net/singwhatiwanna/article/details/44590179" target="_blank" rel="external">http://blog.csdn.net/singwhatiwanna/article/details/44590179</a></li>
+<li><a href="http://blog.csdn.net/stonecao/article/details/6579333" target="_blank" rel="external">http://blog.csdn.net/stonecao/article/details/6579333</a></li>
+<li><a href="http://blog.csdn.net/stonecao/article/details/6657438" target="_blank" rel="external">http://blog.csdn.net/stonecao/article/details/6657438</a></li>
+</ol>
+<hr>
+<hr>
+<p>自己根据这几篇文章写了一些例子，加强印象。</p>
+<p>1.定义接口<br>    package com.example.binderdemo;</p>
+<pre><code><span class="keyword">import</span> android.os.IBinder;
+<span class="keyword">import</span> android.os.IInterface;
+<span class="keyword">import</span> android.os.RemoteException;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IBank</span> <span class="keyword">extends</span> <span class="title">IInterface</span> </span>{
+
+    <span class="keyword">static</span> <span class="keyword">final</span> String DESCRIPTOR = <span class="string">"com.example.binderdemo.IBank"</span>;
+    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TRANSACTION_queryMoney = (IBinder.FIRST_CALL_TRANSACTION + <span class="number">0</span>);
+
+
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">queryMoney</span><span class="params">(<span class="keyword">int</span> uid)</span> <span class="keyword">throws</span> RemoteException</span>;
+
+}
+</code></pre><p>2.实现Binder</p>
+<pre><code><span class="keyword">package</span> com.example.binderdemo;
+
+<span class="keyword">import</span> android.os.Binder;
+<span class="keyword">import</span> android.os.IBinder;
+<span class="keyword">import</span> android.os.IInterface;
+<span class="keyword">import</span> android.os.Parcel;
+<span class="keyword">import</span> android.os.RemoteException;
+<span class="keyword">import</span> android.util.Log;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BankImpl</span> <span class="keyword">extends</span> <span class="title">Binder</span> <span class="keyword">implements</span> <span class="title">IBank</span> </span>{
+
+    <span class="function"><span class="keyword">public</span> <span class="title">BankImpl</span><span class="params">()</span> </span>{
+        <span class="keyword">this</span>.attachInterface(<span class="keyword">this</span>, DESCRIPTOR);
+    }
+
+    <span class="comment">/** 如果是在同一个应用中绑定本应用，则直接返回BankImpl,否则直接返回Proxy*/</span>
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function">IBank <span class="title">asInterface</span><span class="params">(IBinder obj)</span> </span>{
+        <span class="comment">//如果在同一应用中绑定，则obj为BankImpl实例，所以返回值为bankImpl</span>
+        <span class="comment">//否则为android.os.Binder$BinderProxy实例,所以返回Proxy</span>
+        Log.d(<span class="string">"ljhtest"</span>, <span class="string">""</span> + obj);
+        <span class="keyword">if</span> (obj == <span class="keyword">null</span>) {
+            <span class="keyword">return</span> <span class="keyword">null</span>;
+        }
+        IInterface iInterface = obj.queryLocalInterface(DESCRIPTOR);
+        <span class="keyword">if</span> (iInterface != <span class="keyword">null</span> &amp;&amp; iInterface <span class="keyword">instanceof</span> IBank) {
+            <span class="keyword">return</span> (IBank) iInterface;
+        }
+
+        <span class="keyword">return</span> <span class="keyword">new</span> BankImpl.Proxy(obj);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> <span class="function">IBinder <span class="title">asBinder</span><span class="params">()</span> </span>{
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="keyword">protected</span> <span class="function"><span class="keyword">boolean</span> <span class="title">onTransact</span><span class="params">(<span class="keyword">int</span> code, Parcel data, Parcel reply, <span class="keyword">int</span> flags)</span> <span class="keyword">throws</span> RemoteException </span>{
+        <span class="keyword">switch</span> (code) {
+            <span class="keyword">case</span> INTERFACE_TRANSACTION:
+                reply.writeString(DESCRIPTOR);
+                <span class="keyword">return</span> <span class="keyword">true</span>;
+            <span class="keyword">case</span> TRANSACTION_queryMoney:
+                data.enforceInterface(DESCRIPTOR);
+                <span class="keyword">int</span> uid = data.readInt();
+                <span class="keyword">long</span> money = <span class="keyword">this</span>.queryMoney(uid);
+                reply.writeNoException();
+                reply.writeLong(money);
+                <span class="keyword">return</span> <span class="keyword">true</span>;
+            <span class="keyword">default</span>:
+                <span class="keyword">break</span>;
+        }
+        <span class="function"><span class="keyword">return</span> <span class="keyword">super</span>.<span class="title">onTransact</span><span class="params">(code, data, reply, flags)</span></span>;
+    }
+
+    <span class="comment">//同一应用中直接返回结果          </span>
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> <span class="function"><span class="keyword">long</span> <span class="title">queryMoney</span><span class="params">(<span class="keyword">int</span> uid)</span> <span class="keyword">throws</span> RemoteException </span>{
+        <span class="keyword">return</span> uid * <span class="number">10</span>;
+    }
+
+    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Proxy</span> <span class="keyword">implements</span> <span class="title">IBank</span> </span>{
+        <span class="keyword">private</span> IBinder mRemote;
+
+        <span class="function"><span class="keyword">public</span> <span class="title">Proxy</span><span class="params">(IBinder remote)</span> </span>{<span class="comment">//这个remote为BinderProxy实例</span>
+            <span class="keyword">this</span>.mRemote = remote;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="keyword">public</span> <span class="function">IBinder <span class="title">asBinder</span><span class="params">()</span> </span>{
+            <span class="keyword">return</span> mRemote;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="keyword">public</span> <span class="function"><span class="keyword">long</span> <span class="title">queryMoney</span><span class="params">(<span class="keyword">int</span> uid)</span> <span class="keyword">throws</span> RemoteException </span>{
+            Parcel data = Parcel.obtain();
+            Parcel reply = Parcel.obtain();
+            <span class="keyword">long</span> result;
+            <span class="keyword">try</span> {
+                data.writeInterfaceToken(DESCRIPTOR);
+                data.writeInt(uid);
+                mRemote.transact(TRANSACTION_queryMoney, data, reply, <span class="number">0</span>);
+                reply.readException();
+                result = reply.readLong();
+            } <span class="keyword">finally</span> {
+                reply.recycle();
+                data.recycle();
+            }
+
+            <span class="keyword">return</span> result;
+        }
+
+    }
+
+}
+</code></pre><p>3.定义Service</p>
+<pre><code><span class="keyword">package</span> com.example.binderdemo;
+
+<span class="keyword">import</span> android.app.<span class="type">Service</span>;
+<span class="keyword">import</span> android.content.<span class="type">Intent</span>;
+<span class="keyword">import</span> android.os.<span class="type">IBinder</span>;
+<span class="keyword">import</span> android.util.<span class="type">Log</span>;
+
+public <span class="class"><span class="keyword">class</span> <span class="title">BankQueryService</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Service</span> {</span>
+    <span class="keyword">private</span> <span class="type">BankImpl</span> mBankImpl = <span class="keyword">new</span> <span class="type">BankImpl</span>();
+
+    <span class="annotation">@Override</span>
+    public void onCreate() {
+        <span class="type">Log</span>.d(<span class="string">"ljhtest"</span>, <span class="string">"onCreate"</span>);
+        <span class="keyword">super</span>.onCreate();
+    }
+
+    <span class="comment">//绑定时返回接口</span>
+    <span class="annotation">@Override</span>
+    public <span class="type">IBinder</span> onBind(<span class="type">Intent</span> intent) {
+        <span class="type">Log</span>.d(<span class="string">"ljhtest"</span>, <span class="string">"onBind"</span>);
+        <span class="keyword">return</span> mBankImpl;
+    }
+
+}
+</code></pre><hr>
+<p>其实就像按照aidl一些，IBank就相当于aidl文件,BankImpl就相当于IDE为我们生成的文件一样</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/07/06/Binder-aidl理解/" data-id="cibrdz8jv000dnkyavc0xfo9e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Andoid/">Andoid</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Binder/">Binder</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代理模式/">代理模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/" class="article-date">
@@ -91,7 +277,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/" data-id="ciblx3kdd000djsyay5n4j0v9" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/" data-id="cibrdz8k4000mnkya5bfz1mwh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AsyncTask/">AsyncTask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Fragment/">Fragment</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a></li></ul>
@@ -130,7 +316,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/26/UML类图几种关系的总结/" data-id="ciblx3kdj000mjsyay362lvbt" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/06/26/UML类图几种关系的总结/" data-id="cibrdz8k9000vnkya1zzq2dp8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UML/">UML</a></li></ul>
@@ -169,7 +355,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/24/自定义ContentProvider/" data-id="ciblx3kdl000pjsyacbybeumr" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/06/24/自定义ContentProvider/" data-id="cibrdz8kc000ynkyap7ek035i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li></ul>
@@ -575,7 +761,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/10/侧边栏实现/" data-id="ciblx3kdr000tjsyarz47r6i3" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/06/10/侧边栏实现/" data-id="cibrdz8kh0012nkyaw9xnqxr4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/侧边栏/">侧边栏</a></li></ul>
@@ -995,7 +1181,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" data-id="ciblx3kdv000xjsya44ym94bh" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" data-id="cibrdz8km0016nkyamr1yabnz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/二级缓存/">二级缓存</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图片加载/">图片加载</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a></li></ul>
@@ -1035,7 +1221,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="ciblx3kdz0015jsyad92tii43" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="cibrdz8kx001enkyawhg0mpr1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名/">域名</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名解析/">域名解析</a></li></ul>
@@ -1142,7 +1328,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="ciblx3kda0004jsyacv3e9ify" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="cibrdz8ib0004nkyae9t2i8x7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Exception/">Exception</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集合/">集合</a></li></ul>
@@ -1181,7 +1367,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/mytest/" data-id="ciblx3kbq0000jsyaqf0xxklc" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/mytest/" data-id="cibrdz8hm0000nkyabhqwttqo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/测试/">测试</a></li></ul>
@@ -1228,7 +1414,7 @@ public class <span class="type">MemoryCache</span> {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/hello-world/" data-id="ciblx3kcp0003jsyawmb65y58" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/hello-world/" data-id="cibrdz8hs0003nkya75zjdmm8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -1249,7 +1435,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/测试/">测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Andoid/">Andoid</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/测试/">测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1258,7 +1444,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/测试/" style="font-size: 10px;">测试</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a>
+      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Andoid/" style="font-size: 10px;">Andoid</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/测试/" style="font-size: 10px;">测试</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a>
     </div>
   </div>
 
@@ -1267,7 +1453,7 @@ public class <span class="type">MemoryCache</span> {
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1277,6 +1463,10 @@ public class <span class="type">MemoryCache</span> {
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/06/Binder-aidl理解/">Binder-aidl理解</a>
+          </li>
         
           <li>
             <a href="/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/">Fragment与大数据缓存及屏幕旋转 加载数据的AsyncTask</a>
@@ -1292,10 +1482,6 @@ public class <span class="type">MemoryCache</span> {
         
           <li>
             <a href="/2015/06/10/侧边栏实现/">侧边栏实现</a>
-          </li>
-        
-          <li>
-            <a href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/">Android批量图片加载--采用二级缓存、异步加载网络图片</a>
           </li>
         
       </ul>
