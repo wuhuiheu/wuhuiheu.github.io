@@ -3,18 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>自定义ContentProvider | wuhui&#39;s Blog</title>
+  <title>wuhui&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="详情请看http://codingnow.cn/android/1078.html">
-<meta property="og:type" content="article">
-<meta property="og:title" content="自定义ContentProvider">
-<meta property="og:url" content="http://wuhuiheu.net/2015/06/24/自定义ContentProvider/index.html">
+  <meta name="description" content="此网站主要是记录平时工作和学习所用的技术要点">
+<meta property="og:type" content="website">
+<meta property="og:title" content="wuhui's Blog">
+<meta property="og:url" content="http://wuhuiheu.net/page/2/index.html">
 <meta property="og:site_name" content="wuhui's Blog">
-<meta property="og:description" content="详情请看http://codingnow.cn/android/1078.html">
-<meta property="og:updated_time" content="2015-06-24T04:14:32.913Z">
+<meta property="og:description" content="此网站主要是记录平时工作和学习所用的技术要点">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="自定义ContentProvider">
-<meta name="twitter:description" content="详情请看http://codingnow.cn/android/1078.html">
+<meta name="twitter:title" content="wuhui's Blog">
+<meta name="twitter:description" content="此网站主要是记录平时工作和学习所用的技术要点">
   
     <link rel="alternative" href="/atom.xml" title="wuhui&#39;s Blog" type="application/atom+xml">
   
@@ -60,10 +59,12 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-自定义ContentProvider" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main">
+  
+    <article id="post-Java遍历集合过程并删除其中元素" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2015/06/24/自定义ContentProvider/" class="article-date">
-  <time datetime="2015-06-24T03:39:14.000Z" itemprop="datePublished">2015-06-24</time>
+    <a href="/2015/05/27/Java遍历集合过程并删除其中元素/" class="article-date">
+  <time datetime="2015-05-27T07:36:06.000Z" itemprop="datePublished">2015-05-27</time>
 </a>
     
   </div>
@@ -73,8 +74,8 @@
       <header class="article-header">
         
   
-    <h1 class="article-title" itemprop="name">
-      自定义ContentProvider
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/27/Java遍历集合过程并删除其中元素/">Java遍历集合过程并删除其中元素</a>
     </h1>
   
 
@@ -82,42 +83,96 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>详情请看<a href="http://codingnow.cn/android/1078.html" target="_blank" rel="external">http://codingnow.cn/android/1078.html</a></p>
+        <h1 id="情景">情景</h1><hr>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;可能我们都会有这样的需求，遍历集合的时候，对集合中某些元素做些处理，如删除，运行的时候会报java.util.ConcurrentModificationException异常。例如如下代码：</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> Tester {
+
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> MyClass {
+        <span class="keyword">public</span> <span class="keyword">int</span> num;
+    }
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>{
+        Random random = <span class="keyword">new</span> Random(<span class="keyword">new</span> Date().getTime());
+        ArrayList&lt;MyClass&gt; <span class="built_in">list</span> = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i&lt; <span class="number">100</span>; i++){
+            MyClass myClass = <span class="keyword">new</span> MyClass();
+            myClass.num = random.nextInt(<span class="number">100</span>) + <span class="number">1</span>;
+            <span class="built_in">list</span>.add(myClass);
+        }
+        <span class="keyword">for</span>(MyClass myClass : <span class="built_in">list</span>){
+            <span class="keyword">if</span>(myClass.num &lt; <span class="number">50</span>){
+                <span class="built_in">list</span>.remove(myClass);
+            }
+        }
+        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="built_in">list</span>.size(); i++){
+            System.out.print(<span class="built_in">list</span>.get(i).num + <span class="string">" "</span>);
+        }
+
+        System.out.print(<span class="string">"\n"</span>);
+    }
+}
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;运行的时候会报错。出错信息如下：</p>
+<pre><code>Exception <span class="keyword">in</span> thread <span class="string">"main"</span> java<span class="class">.util</span><span class="class">.ConcurrentModificationException</span>
+    at java<span class="class">.util</span><span class="class">.ArrayList</span><span class="variable">$Itr</span>.<span class="function"><span class="title">checkForComodification</span><span class="params">(ArrayList.java:<span class="number">901</span>)</span></span>
+    at java<span class="class">.util</span><span class="class">.ArrayList</span><span class="variable">$Itr</span>.<span class="function"><span class="title">next</span><span class="params">(ArrayList.java:<span class="number">851</span>)</span></span>
+    at Tester.<span class="function"><span class="title">main</span><span class="params">(Tester.java:<span class="number">22</span>)</span></span>
+</code></pre><hr>
+<h1 id="原因分析">原因分析</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;出错原因是checkForComodification中<code>modCount != expectedModCount</code>,抛出异常。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;当我们调用<code>remove(myClass)</code>的时候，将使modCount++,从而使得<code>modCount != expectedModCount</code>成立。</p>
+<h1 id="解决方法">解决方法</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;假如我们遍历集合的时候，就是要删除某些元素的时候，我们可以迭代器或者利用<code>CopyOnWriteArrayList</code>。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;常用迭代器方法，我们可以将上面那段代码改写成如下所示：</p>
+<pre><code>public class <span class="type">Tester</span> {
+
+    public <span class="keyword">static</span> class <span class="type">MyClass</span> {
+        public <span class="type">int</span> num;
+    }
+
+    public <span class="keyword">static</span> <span class="type">void</span> main(<span class="type">String</span> args[]) {
+        <span class="type">Random</span> random = new <span class="type">Random</span>(new <span class="type">Date</span>().getTime());
+        <span class="type">ArrayList</span>&lt;<span class="type">MyClass</span>&gt; list = new <span class="type">ArrayList</span>&lt;&gt;();
+        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) {
+            <span class="type">MyClass</span> myClass = new <span class="type">MyClass</span>();
+            myClass.num = random.nextInt(<span class="number">100</span>) + <span class="number">1</span>;
+            list.add(myClass);
+        }
+
+        <span class="type">Iterator</span>&lt;<span class="type">MyClass</span>&gt; <span class="keyword">iterator</span> = list.<span class="keyword">iterator</span>();
+        <span class="keyword">while</span> (<span class="keyword">iterator</span>.hasNext()) {
+            <span class="type">MyClass</span> myClass = <span class="keyword">iterator</span>.next();
+            <span class="keyword">if</span> (myClass.num &lt; <span class="number">50</span>) {
+                <span class="keyword">iterator</span>.remove();
+            }
+        }
+
+        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; list.size(); i++) {
+            <span class="type">System</span>.<span class="keyword">out</span>.print(list.get(i).num + <span class="string">" "</span>);
+        }
+
+        <span class="type">System</span>.<span class="keyword">out</span>.print(<span class="string">"\n"</span>);
+    }
+
+}
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;CopyOnWriteArrayList方法就请看这遍博文了<a href="http://caoyaojun1988-163-com.iteye.com/blog/1754686" target="_blank" rel="external">CopyOnWriteArrayList 解读</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/06/24/自定义ContentProvider/" data-id="ciccqsae6001bpoyafwz8sgre" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="ciccqsa950000poya1na8vkhu" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ContentProvider/">ContentProvider</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Exception/">Exception</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集合/">集合</a></li></ul>
 
     </footer>
   </div>
   
-    
-<nav id="article-nav">
-  
-    <a href="/2015/06/26/UML类图几种关系的总结/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          UML类图几种关系的总结
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2015/06/10/侧边栏实现/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">侧边栏实现</div>
-    </a>
-  
-</nav>
-
-  
 </article>
 
+
+  
+  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    </nav>
+  
 </section>
         
           <aside id="sidebar">
