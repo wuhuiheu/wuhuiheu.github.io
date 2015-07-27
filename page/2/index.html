@@ -61,6 +61,832 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-侧边栏实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/10/侧边栏实现/" class="article-date">
+  <time datetime="2015-06-10T09:59:27.000Z" itemprop="datePublished">2015-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/10/侧边栏实现/">侧边栏实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一、效果图">一、效果图</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;话不多说，直接上图<br>    <div align="center"><br>        <img src="http://i.imgur.com/nmnIy4h.png" width="30%" height="30%" alt="效果图" align="center"><br>    </div></p>
+<h1 id="二、布局">二、布局</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;activity采用FrameLayout，点击Home图标的时候，显示侧边栏。而侧边栏布局采用LinearLayout，左边ListView，右边一个采用一个View标签。</p>
+<p>layout_main.xml</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">FrameLayout</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:layout_width</span>=<span class="value">"fill_parent"</span>
+<span class="attribute">android:layout_height</span>=<span class="value">"fill_parent"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">TextView</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"fill_parent"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"wrap_content"</span>
+    <span class="attribute">android:layout_gravity</span>=<span class="value">"center|center_horizontal"</span>
+    <span class="attribute">android:text</span>=<span class="value">"点击左上角图标左边的箭头,就可以看到侧边栏效果了!!!"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">com.duguang.baseanimation.ui.customview.ribbomenu.RibbonMenuView</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/ribbonMenuView1"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span> /&gt;</span>
+
+<span class="tag">&lt;/<span class="title">FrameLayout</span>&gt;</span>
+</code></pre><p>layout_menu.xml</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">LinearLayout</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:layout_width</span>=<span class="value">"match_parent"</span>
+<span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+<span class="attribute">android:orientation</span>=<span class="value">"horizontal"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">ListView</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/rbm_listview"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"200dp"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:background</span>=<span class="value">"#303030"</span>
+    <span class="attribute">android:cacheColorHint</span>=<span class="value">"#00000000"</span>
+    <span class="attribute">android:visibility</span>=<span class="value">"gone"</span> &gt;</span>
+<span class="tag">&lt;/<span class="title">ListView</span>&gt;</span>
+
+<span class="comment">&lt;!-- simple drop shadow --&gt;</span>
+
+<span class="tag">&lt;<span class="title">View</span>
+    <span class="attribute">android:id</span>=<span class="value">"@+id/rbm_outside_view"</span>
+    <span class="attribute">android:layout_width</span>=<span class="value">"0dp"</span>
+    <span class="attribute">android:layout_height</span>=<span class="value">"match_parent"</span>
+    <span class="attribute">android:layout_weight</span>=<span class="value">"1"</span>
+    <span class="attribute">android:clickable</span>=<span class="value">"true"</span>
+    <span class="attribute">android:visibility</span>=<span class="value">"gone"</span> /&gt;</span>
+
+<span class="tag">&lt;/<span class="title">LinearLayout</span>&gt;</span>
+</code></pre><h1 id="三、侧边栏实现">三、侧边栏实现</h1><pre><code><span class="keyword">package</span> com.duguang.baseanimation.ui.customview.ribbomenu;
+
+<span class="keyword">import</span> java.util.ArrayList;
+
+<span class="keyword">import</span> org.xmlpull.v1.XmlPullParser;
+
+<span class="keyword">import</span> android.content.Context;
+<span class="keyword">import</span> android.content.res.XmlResourceParser;
+<span class="keyword">import</span> android.os.Parcel;
+<span class="keyword">import</span> android.os.Parcelable;
+<span class="keyword">import</span> android.util.AttributeSet;
+<span class="keyword">import</span> android.util.Log;
+<span class="keyword">import</span> android.view.LayoutInflater;
+<span class="keyword">import</span> android.view.View;
+<span class="keyword">import</span> android.view.ViewGroup;
+<span class="keyword">import</span> android.view.animation.AnimationUtils;
+<span class="keyword">import</span> android.widget.AdapterView;
+<span class="keyword">import</span> android.widget.AdapterView.OnItemClickListener;
+<span class="keyword">import</span> android.widget.BaseAdapter;
+<span class="keyword">import</span> android.widget.ImageView;
+<span class="keyword">import</span> android.widget.LinearLayout;
+<span class="keyword">import</span> android.widget.ListView;
+<span class="keyword">import</span> android.widget.TextView;
+
+<span class="keyword">import</span> com.duguang.baseanimation.R;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RibbonMenuView</span> <span class="keyword">extends</span> <span class="title">LinearLayout</span> </span>{
+
+    <span class="keyword">private</span> ListView rbmListView;
+    <span class="keyword">private</span> View rbmOutsideView;
+
+    <span class="keyword">private</span> iRibbonMenuCallback callback;
+
+    <span class="keyword">private</span> <span class="keyword">static</span> ArrayList&lt;RibbonMenuItem&gt; menuItems;
+
+    <span class="function"><span class="keyword">public</span> <span class="title">RibbonMenuView</span><span class="params">(Context context)</span> </span>{
+        <span class="keyword">super</span>(context);
+        load();
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="title">RibbonMenuView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>{
+        <span class="keyword">super</span>(context, attrs);
+        load();
+    }
+
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">load</span><span class="params">()</span> </span>{
+        <span class="keyword">if</span> (isInEditMode())
+            <span class="keyword">return</span>;
+        inflateLayout();
+        initUi();
+    }
+
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">inflateLayout</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span> {
+            LayoutInflater.from(getContext()).inflate(R.layout.activity_custom_ribbon_menu, <span class="keyword">this</span>, <span class="keyword">true</span>);
+        } <span class="keyword">catch</span> (Exception e) {
+
+        }
+    }
+
+    <span class="comment">/** 初始view，并注册点击事件 */</span>
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initUi</span><span class="params">()</span> </span>{
+
+        rbmListView = (ListView) findViewById(R.id.rbm_listview);
+        rbmOutsideView = (View) findViewById(R.id.rbm_outside_view);
+
+        rbmOutsideView.setOnClickListener(<span class="keyword">new</span> OnClickListener() {<span class="comment">// 菜单其他部分点击将隐藏菜单</span>
+
+                    <span class="annotation">@Override</span>
+                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>{
+                        hideMenu();
+
+                    }
+                });
+
+        rbmListView.setOnItemClickListener(<span class="keyword">new</span> OnItemClickListener() {<span class="comment">// 点击菜单将回调，并隐藏菜单</span>
+
+                    <span class="annotation">@Override</span>
+                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onItemClick</span><span class="params">(AdapterView&lt;?&gt; parent, View view,
+                            <span class="keyword">int</span> position, <span class="keyword">long</span> id)</span> </span>{
+
+                        <span class="keyword">if</span> (callback != <span class="keyword">null</span>)
+                            callback.RibbonMenuItemClick(menuItems.get(position).id);
+
+                        hideMenu();
+                    }
+
+                });
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMenuClickCallback</span><span class="params">(iRibbonMenuCallback callback)</span> </span>{
+        <span class="keyword">this</span>.callback = callback;
+    }
+
+    <span class="comment">/** 传入一个菜单资源文件id，然后解析菜单资源文件，获取相应菜单信息 */</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMenuItems</span><span class="params">(<span class="keyword">int</span> menu)</span> </span>{
+
+        parseXml(menu);
+
+        <span class="keyword">if</span> (menuItems != <span class="keyword">null</span> &amp;&amp; menuItems.size() &gt; <span class="number">0</span>) {
+            rbmListView.setAdapter(<span class="keyword">new</span> Adapter());
+
+        }
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setBackgroundResource</span><span class="params">(<span class="keyword">int</span> resource)</span> </span>{
+        rbmListView.setBackgroundResource(resource);
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showMenu</span><span class="params">()</span> </span>{
+        rbmOutsideView.setVisibility(View.VISIBLE);
+
+        rbmListView.setVisibility(View.VISIBLE);
+        rbmListView.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.rbm_in_from_left));
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hideMenu</span><span class="params">()</span> </span>{
+
+        rbmOutsideView.setVisibility(View.GONE);
+        rbmListView.setVisibility(View.GONE);
+
+        rbmListView.startAnimation(AnimationUtils.loadAnimation(getContext(),
+                R.anim.rbm_out_to_left));
+
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">toggleMenu</span><span class="params">()</span> </span>{
+
+        <span class="keyword">if</span> (rbmOutsideView.getVisibility() == View.GONE) {
+            showMenu();
+        } <span class="keyword">else</span> {
+            hideMenu();
+        }
+    }
+
+    <span class="comment">/** 解析menu,将得到的menuItem存入menuItems中 */</span>
+    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseXml</span><span class="params">(<span class="keyword">int</span> menu)</span> </span>{
+        menuItems = <span class="keyword">new</span> ArrayList&lt;RibbonMenuView.RibbonMenuItem&gt;();
+
+        <span class="keyword">try</span> {
+            XmlResourceParser xpp = getResources().getXml(menu);
+            xpp.next();
+
+            <span class="keyword">int</span> eventType = xpp.getEventType();
+            <span class="keyword">while</span> (eventType != XmlPullParser.END_DOCUMENT) {
+                <span class="keyword">if</span> (eventType == XmlPullParser.START_TAG) {
+                    String elemName = xpp.getName();
+                    <span class="keyword">if</span> (elemName.equals(<span class="string">"item"</span>)) {
+                        String textId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"title"</span>);
+                        String iconId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"icon"</span>);
+                        String resId = xpp.getAttributeValue(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">"id"</span>);
+
+                        Log.d(<span class="string">"ljhtest"</span>, <span class="string">""</span> + textId + <span class="string">" "</span> + iconId + <span class="string">" "</span> + resId);
+
+                        RibbonMenuItem item = <span class="keyword">new</span> RibbonMenuItem();
+                        item.id = Integer.valueOf(resId.replace(<span class="string">"@"</span>, <span class="string">""</span>));
+                        item.text = resourceIdToString(textId);
+                        item.icon = Integer.valueOf(iconId.replace(<span class="string">"@"</span>, <span class="string">""</span>));
+
+                        menuItems.add(item);
+                    }
+                }
+                eventType = xpp.next();
+            }
+        } <span class="keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    <span class="function"><span class="keyword">private</span> String <span class="title">resourceIdToString</span><span class="params">(String text)</span> </span>{
+        <span class="keyword">if</span> (!text.contains(<span class="string">"@"</span>)) {
+            <span class="keyword">return</span> text;
+        }
+        <span class="keyword">else</span> {
+            String id = text.replace(<span class="string">"@"</span>, <span class="string">""</span>);
+            <span class="keyword">return</span> getResources().getString(Integer.valueOf(id));
+        }
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isMenuVisible</span><span class="params">()</span> </span>{
+        <span class="keyword">return</span> rbmOutsideView.getVisibility() == View.VISIBLE;
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onRestoreInstanceState</span><span class="params">(Parcelable state)</span> </span>{
+        SavedState ss = (SavedState) state;
+        <span class="keyword">super</span>.onRestoreInstanceState(ss.getSuperState());
+
+        <span class="keyword">if</span> (ss.bShowMenu)
+            showMenu();
+        <span class="keyword">else</span>
+            hideMenu();
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">protected</span> Parcelable <span class="title">onSaveInstanceState</span><span class="params">()</span> </span>{
+        Parcelable superState = <span class="keyword">super</span>.onSaveInstanceState();
+        SavedState ss = <span class="keyword">new</span> SavedState(superState);
+
+        ss.bShowMenu = isMenuVisible();
+
+        <span class="keyword">return</span> ss;
+    }
+
+    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SavedState</span> <span class="keyword">extends</span> <span class="title">BaseSavedState</span> </span>{
+        <span class="keyword">boolean</span> bShowMenu;
+
+        SavedState(Parcelable superState) {
+            <span class="keyword">super</span>(superState);
+        }
+
+        <span class="function"><span class="keyword">private</span> <span class="title">SavedState</span><span class="params">(Parcel in)</span> </span>{
+            <span class="keyword">super</span>(in);
+            bShowMenu = (in.readInt() == <span class="number">1</span>);
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel out, <span class="keyword">int</span> flags)</span> </span>{
+            <span class="keyword">super</span>.writeToParcel(out, flags);
+            out.writeInt(bShowMenu ? <span class="number">1</span> : <span class="number">0</span>);
+        }
+
+        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;SavedState&gt; CREATOR = <span class="keyword">new</span> Parcelable.Creator&lt;SavedState&gt;() {
+            <span class="function"><span class="keyword">public</span> SavedState <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>{
+                <span class="keyword">return</span> <span class="keyword">new</span> SavedState(in);
+            }
+
+            <span class="keyword">public</span> SavedState[] newArray(<span class="keyword">int</span> size) {
+                <span class="keyword">return</span> <span class="keyword">new</span> SavedState[size];
+            }
+        };
+    }
+
+    <span class="class"><span class="keyword">class</span> <span class="title">RibbonMenuItem</span> </span>{
+
+        <span class="keyword">int</span> id;
+        String text;
+        <span class="keyword">int</span> icon;
+
+    }
+
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">Adapter</span> <span class="keyword">extends</span> <span class="title">BaseAdapter</span> </span>{
+
+        <span class="keyword">private</span> LayoutInflater inflater;
+
+        <span class="function"><span class="keyword">public</span> <span class="title">Adapter</span><span class="params">()</span> </span>{
+            inflater = LayoutInflater.from(getContext());
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCount</span><span class="params">()</span> </span>{
+
+            <span class="keyword">return</span> menuItems.size();
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> Object <span class="title">getItem</span><span class="params">(<span class="keyword">int</span> position)</span> </span>{
+
+            <span class="keyword">return</span> <span class="keyword">null</span>;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getItemId</span><span class="params">(<span class="keyword">int</span> position)</span> </span>{
+
+            <span class="keyword">return</span> <span class="number">0</span>;
+        }
+
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span> </span>{
+
+            <span class="keyword">final</span> ViewHolder holder;
+
+            <span class="keyword">if</span> (convertView == <span class="keyword">null</span> || convertView <span class="keyword">instanceof</span> TextView) {
+                convertView = inflater.inflate(R.layout.activity_custom_ribbon_item, <span class="keyword">null</span>);
+
+                holder = <span class="keyword">new</span> ViewHolder();
+                holder.image = (ImageView) convertView.findViewById(R.id.rbm_item_icon);
+                holder.text = (TextView) convertView.findViewById(R.id.rbm_item_text);
+
+                convertView.setTag(holder);
+
+            }
+            <span class="keyword">else</span> {
+
+                holder = (ViewHolder) convertView.getTag();
+            }
+
+            holder.image.setImageResource(menuItems.get(position).icon);
+            holder.text.setText(menuItems.get(position).text);
+
+            <span class="keyword">return</span> convertView;
+        }
+
+        <span class="class"><span class="keyword">class</span> <span class="title">ViewHolder</span> </span>{
+            TextView text;
+            ImageView image;
+
+        }
+
+    }
+
+}
+</code></pre><p>其中侧边栏出现的动画如下：</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">set</span> <span class="attribute">xmlns:android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="attribute">android:interpolator</span>=<span class="value">"@android:anim/accelerate_interpolator"</span> &gt;</span>
+
+<span class="tag">&lt;<span class="title">translate</span>
+    <span class="attribute">android:duration</span>=<span class="value">"150"</span>
+    <span class="attribute">android:fromXDelta</span>=<span class="value">"-20%"</span>
+    <span class="attribute">android:toXDelta</span>=<span class="value">"0%"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">alpha</span>
+    <span class="attribute">android:duration</span>=<span class="value">"150"</span>
+    <span class="attribute">android:fromAlpha</span>=<span class="value">"0.0"</span>
+    <span class="attribute">android:toAlpha</span>=<span class="value">"1.0"</span> /&gt;</span>
+</code></pre><p></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/06/10/侧边栏实现/" data-id="cicl7z6hh001r7wya34thsvxe" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/侧边栏/">侧边栏</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Android批量图片加载-采用二级缓存、异步加载网络图片" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" class="article-date">
+  <time datetime="2015-06-08T09:53:54.000Z" itemprop="datePublished">2015-06-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/">Android批量图片加载--采用二级缓存、异步加载网络图片</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一、问题描述">一、问题描述</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;Android应用中经常涉及从网络中加载大量图片，为提升加载速度和效率，减少网络流量都会采用二级缓存和异步加载机制，所谓二级缓存就是通过先从内存中获取、再从文件中获取，最后才会访问网络。内存缓存（一级）本质上是Map集合以key-value对的方式存储图片的url和Bitmap信息，由于内存缓存会造成堆内存泄露， 管理相对复杂一些，可采用第三方组件,如Volley，对于有经验的可自己编写组件，而文件缓存比较简单通常自己封装一下即可。网上已经有很多优秀的框架了，下面是我自己写的代码：</p>
+<h1 id="二、核心组件">二、核心组件</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;下面先看看实现一级缓存（内存）、二级缓存（磁盘文件）所编写的组件</p>
+<ol>
+<li>MemoryCache</li>
+</ol>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在内存中存储图片（一级缓存）, 采用了1个map来缓存图片代码如下：</p>
+<pre><code><span class="keyword">import</span> java.lang.<span class="keyword">ref</span>.<span class="type">SoftReference</span>;
+<span class="keyword">import</span> java.util.<span class="type">HashMap</span>;
+<span class="keyword">import</span> java.util.<span class="type">LinkedHashMap</span>;
+<span class="keyword">import</span> java.util.<span class="type">Map</span>;
+
+<span class="keyword">import</span> android.graphics.<span class="type">Bitmap</span>;
+
+public class <span class="type">MemoryCache</span> {
+
+    /** 最大缓存数 */
+    private <span class="keyword">static</span> final <span class="type">int</span> <span class="type">MAX_CACHE_CAPACTITY</span> = <span class="number">30</span>;
+
+    /** 用软引用的bitmap对象 */
+    private <span class="type">HashMap</span>&lt;<span class="type">String</span>, <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt;&gt; mCacheMap = new <span class="type">LinkedHashMap</span>&lt;<span class="type">String</span>, <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt;&gt;() {
+
+        private <span class="keyword">static</span> final long serialVersionUID = <span class="number">1</span>L;
+        /** 当缓存数量超过规定大小（返回<span class="literal">true</span>）会清除最早放入缓存的*/    
+        protected boolean removeEldestEntry(
+                <span class="type">Map</span>.<span class="type">Entry</span>&lt;<span class="type">String</span>, java.lang.<span class="keyword">ref</span>.<span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt;&gt; eldest) {
+            <span class="keyword">return</span> size() &gt; <span class="type">MAX_CACHE_CAPACTITY</span>;
+
+        };
+    };
+
+    /**
+     * 从缓存中取出图片
+     * 
+     * @param url
+     * @<span class="keyword">return</span> 如果内存中存在图片，并且未释放，则返回此图片，否则返回null
+     */
+    public <span class="type">Bitmap</span> get(<span class="type">String</span> url) {
+        <span class="keyword">if</span> (!mCacheMap.keySet().contains(url)) {
+            <span class="keyword">return</span> null;
+        }
+        <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt; <span class="keyword">ref</span> = mCacheMap.get(url);
+        <span class="keyword">return</span> <span class="keyword">ref</span>.get();
+    }
+
+    /**
+     * 将图片加入到缓存中
+     * 
+     * @param url
+     * @param bitmap
+     */
+    public <span class="type">void</span> put(<span class="type">String</span> url, <span class="type">Bitmap</span> bitmap) {
+        mCacheMap.put(url, new <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt;(bitmap));
+    }
+
+    /**
+     * 清除所有缓存
+     */
+    public <span class="type">void</span> clear() {
+        <span class="keyword">for</span> (<span class="type">Map</span>.<span class="type">Entry</span>&lt;<span class="type">String</span>, <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt;&gt; entry : mCacheMap
+                .entrySet()) {
+            <span class="type">SoftReference</span>&lt;<span class="type">Bitmap</span>&gt; <span class="keyword">ref</span> = entry.getValue();
+            <span class="keyword">if</span> (null != <span class="keyword">ref</span> &amp;&amp; null != <span class="keyword">ref</span>.get()) {
+                <span class="keyword">ref</span>.get().recycle();
+            }
+        }
+        mCacheMap.clear();
+    }
+}
+</code></pre><p>2.FileCache</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在磁盘中缓存图片(二级缓存)，代码如下</p>
+<pre><code><span class="keyword">import</span> java.io.BufferedOutputStream;
+<span class="keyword">import</span> java.io.<span class="keyword">File</span>;
+<span class="keyword">import</span> java.io.FileNotFoundException;
+<span class="keyword">import</span> java.io.FileOutputStream;
+<span class="keyword">import</span> java.io.IOException;
+<span class="keyword">import</span> java.io.UnsupportedEncodingException;
+<span class="keyword">import</span> java.net.URLEncoder;
+
+<span class="keyword">import</span> android.content.Context;
+<span class="keyword">import</span> android.graphics.Bitmap;
+<span class="keyword">import</span> android.graphics.Bitmap.CompressFormat;
+<span class="keyword">import</span> android.os.Environment;
+<span class="keyword">import</span> android.util.Log;
+
+<span class="keyword">public</span> <span class="keyword">class</span> FileCache {
+
+    <span class="keyword">private</span> <span class="keyword">static</span> String TAG = <span class="string">"FileCache"</span>;
+    <span class="comment">// 缓存file</span>
+    <span class="keyword">private</span> <span class="keyword">File</span> mCacheDir;
+
+    <span class="comment">/**
+     * 创建缓存文件目录，如果有SD卡，则使用SD， 没有则使用系统缓存
+     * 
+     * @param context
+     * @param fileDir
+     * @param dir
+     */</span>
+    <span class="keyword">public</span> FileCache(Context context, String dir) {
+        <span class="keyword">if</span> (Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            <span class="comment">// 有SD卡</span>
+            String SDPath = Environment.getExternalStorageDirectory()
+                    .getAbsolutePath();
+
+            Log.d(TAG, SDPath + <span class="keyword">File</span>.separator + dir);
+
+            mCacheDir = <span class="keyword">new</span> <span class="keyword">File</span>(SDPath + <span class="keyword">File</span>.separator + dir);
+            <span class="keyword">if</span> (!mCacheDir.exists()) {<span class="comment">// 确保缓存目录存在</span>
+                mCacheDir.mkdirs();
+            }
+        } <span class="keyword">else</span> {
+            <span class="comment">// 使用系统缓存</span>
+            mCacheDir = context.getCacheDir();
+        }
+    }
+
+    <span class="keyword">public</span> <span class="keyword">File</span> getFile(String url) {
+
+
+        <span class="keyword">File</span> <span class="keyword">file</span> = <span class="keyword">new</span> <span class="keyword">File</span>(mCacheDir, url2Filename(url));
+        <span class="keyword">if</span>(<span class="keyword">file</span>.exists()){
+            <span class="keyword">return</span> <span class="keyword">file</span>;
+        }
+        <span class="keyword">else</span>{
+            <span class="keyword">return</span> <span class="keyword">null</span>;
+        }
+    }
+
+    <span class="comment">/**
+     * 将bitmap保存到文件中
+     * 
+     * @param url
+     * @param bitmap
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> putFile(String url, Bitmap bitmap) {
+        BufferedOutputStream bos = <span class="keyword">null</span>;
+        <span class="keyword">try</span> {
+            bos = <span class="keyword">new</span> BufferedOutputStream(
+                                    <span class="keyword">new</span> FileOutputStream(<span class="keyword">new</span> <span class="keyword">File</span>(mCacheDir, url2Filename(url))));
+            bitmap.compress(CompressFormat.PNG, <span class="number">100</span>, bos);
+            bos.close();
+        } <span class="keyword">catch</span> (FileNotFoundException e) {
+            e.printStackTrace();
+        } <span class="keyword">catch</span> (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    <span class="keyword">private</span> String url2Filename(String url){
+        <span class="keyword">return</span> <span class="keyword">new</span> Integer(url.hashCode()).toString();
+    }
+    <span class="comment">/**
+     * 清除缓存文件
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> clear() {
+        <span class="keyword">File</span>[] files = mCacheDir.listFiles();
+        <span class="keyword">for</span> (<span class="keyword">File</span> <span class="keyword">file</span> : files) {
+            <span class="keyword">file</span>.<span class="keyword">delete</span>();
+        }
+    }
+}
+</code></pre><p>3.异步加载组件AsyncImageLoader</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;android中采用单线程模型即应用运行在UI主线程中，且Android又是实时操作系统要求及时响应否则出现ANR错误，因此对于耗时操作要求不能阻塞UI主线程，需要开启一个线程处理（如本应用中的图片加载）并将线程放入队列中，当运行完成后再通知UI主线程进行更改，同时移除任务——这就是异步任务，在android中实现异步可通过本系列一中所用到的AsyncTask或者使用thread+handler机制，在这里是完全是通过代码编写实现的，这样我们可以更清晰的看到异步通信的实现的本质，代码如下</p>
+<pre><code><span class="preprocessor"><span class="keyword">import</span> java.io.File;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.io.IOException;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.io.InputStream;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.net.HttpURLConnection;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.net.MalformedURLException;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.net.URL;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.ArrayList;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.Collections;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.List;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.Map;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.Set;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.WeakHashMap;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.concurrent.ExecutorService;</span>
+<span class="preprocessor"><span class="keyword">import</span> java.util.concurrent.Executors;</span>
+
+<span class="preprocessor"><span class="keyword">import</span> android.content.Context;</span>
+<span class="preprocessor"><span class="keyword">import</span> android.graphics.Bitmap;</span>
+<span class="preprocessor"><span class="keyword">import</span> android.graphics.BitmapFactory;</span>
+<span class="preprocessor"><span class="keyword">import</span> android.os.AsyncTask;</span>
+<span class="preprocessor"><span class="keyword">import</span> android.util.Log;</span>
+<span class="preprocessor"><span class="keyword">import</span> android.widget.ImageView;</span>
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncImageLoader</span> </span>{
+    <span class="keyword">private</span> <span class="keyword">static</span> String TAG = <span class="string">"AsyncImageLoader"</span>;
+    <span class="comment">/** 内存缓存 */</span>
+    <span class="keyword">private</span> MemoryCache mMemoryCache;
+
+    <span class="comment">/** 文件缓存 */</span>
+    <span class="keyword">private</span> FileCache mFileCache;
+
+    <span class="comment">/** 线程池 */</span>
+    <span class="keyword">private</span> ExecutorService mES;
+
+    <span class="comment">/** 回调函数*/</span>
+    <span class="keyword">private</span> onImageLoadListener mOnImageLoadListener = <span class="literal">null</span>;
+
+    <span class="keyword">private</span> Context mContext;
+
+    <span class="comment">/** 记录加载图片的imageView*/</span>
+    <span class="keyword">private</span> Map&lt;ImageView, String&gt; mImageViews = Collections
+            .synchronizedMap(<span class="keyword">new</span> WeakHashMap&lt;ImageView, String&gt;());
+
+    <span class="comment">/** 保存正在下载图片的任务*/</span>
+    <span class="keyword">private</span> List&lt;LoadImageTask&gt; mTaskQueue = <span class="keyword">new</span> ArrayList&lt;LoadImageTask&gt;();
+
+    <span class="keyword">public</span> AsyncImageLoader(Context context, String dir) {
+        <span class="keyword">this</span>.mContext = context;
+        <span class="keyword">this</span>.mMemoryCache = <span class="keyword">new</span> MemoryCache();
+        <span class="keyword">this</span>.mFileCache = <span class="keyword">new</span> FileCache(context, dir);
+        mES = Executors.newFixedThreadPool(<span class="number">4</span>);
+    }
+
+    <span class="comment">/**
+     * 设置获取图片的回调
+     * 
+     * @param onImageLoadListener
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> setOnImageLoadListener(onImageLoadListener onImageLoadListener) {
+        <span class="keyword">this</span>.mOnImageLoadListener = onImageLoadListener;
+    }
+
+    <span class="comment">/**
+     * 根据url加载相应图片
+     * 
+     * @param url
+     * @return
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> loadBitmap(ImageView imageView, String url) {
+
+        <span class="keyword">if</span> (<span class="literal">null</span> != mOnImageLoadListener) {
+            mOnImageLoadListener.onPreLoad(imageView);
+        }
+
+        Bitmap bitmap;
+
+        <span class="comment">// 先从内存中加载图片</span>
+        bitmap = mMemoryCache.<span class="keyword">get</span>(url);
+        <span class="keyword">if</span> (bitmap == <span class="literal">null</span>) {
+            File file = mFileCache.getFile(url);
+            <span class="keyword">if</span> (<span class="literal">null</span> != file) {<span class="comment">// 文件缓存中有</span>
+                bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                mMemoryCache.put(url, bitmap);<span class="comment">// 将文件缓存中添加到内存缓存</span>
+
+                mOnImageLoadListener.onLoadSuccess(imageView, bitmap);
+
+            } <span class="keyword">else</span> {<span class="comment">// 网络请求</span>
+                    <span class="comment">// 先将imageView加入到map中</span>
+                mImageViews.put(imageView, url);
+                networkLoadPhoto(url);<span class="comment">// 网络中获取</span>
+            }
+        } <span class="keyword">else</span> {
+            mOnImageLoadListener.onLoadSuccess(imageView, bitmap);
+        }
+
+    }
+
+    <span class="keyword">private</span> <span class="keyword">void</span> networkLoadPhoto(String url) {
+        <span class="keyword">if</span> (isTaskExisted(url)) {<span class="comment">// 下载队列中存在该任务，则不重新添加</span>
+            <span class="keyword">return</span>;
+        }
+
+        LoadImageTask task = <span class="keyword">new</span> LoadImageTask(url);
+        synchronized (mTaskQueue) {
+            mTaskQueue.add(task);
+        }
+
+        task.executeOnExecutor(mES, url);<span class="comment">// 添加到线程池中执行</span>
+
+    }
+
+    <span class="comment">/**
+     * 判断下载队列中是否存在该任务
+     * 
+     * @param url
+     * @return
+     */</span>
+    <span class="keyword">private</span> boolean isTaskExisted(String url) {
+        <span class="keyword">if</span> (url == <span class="literal">null</span>) {
+            <span class="keyword">return</span> <span class="literal">false</span>;
+        }
+
+        synchronized (mTaskQueue) {
+            <span class="keyword">for</span> (LoadImageTask loadImageTask : mTaskQueue) {
+                <span class="keyword">if</span> (loadImageTask.url != <span class="literal">null</span> &amp;&amp; loadImageTask.url.equals(url)) {
+                    <span class="keyword">return</span> <span class="literal">true</span>;
+                }
+            }
+        }
+        <span class="keyword">return</span> <span class="literal">false</span>;
+
+    }
+
+    <span class="comment">/**
+     * 根据url下载图片
+     * 
+     * @param url
+     * @return
+     */</span>
+    <span class="keyword">private</span> Bitmap loadImageFromUrl(String url) {
+        Bitmap bitmap = <span class="literal">null</span>;
+        <span class="keyword">try</span> {
+            URL u = <span class="keyword">new</span> URL(url);
+            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            InputStream <span class="keyword">is</span> = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(<span class="keyword">is</span>);
+        } <span class="keyword">catch</span> (MalformedURLException e) {
+            Log.d(TAG, <span class="string">"url:"</span> + url);
+            e.printStackTrace();
+        } <span class="keyword">catch</span> (IOException e) {
+
+            e.printStackTrace();
+        }
+        <span class="keyword">return</span> bitmap;
+    }
+
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">LoadImageTask</span> <span class="keyword">extends</span> <span class="title">AsyncTask</span>&lt;<span class="title">String</span>, <span class="title">Integer</span>, <span class="title">Bitmap</span>&gt; </span>{
+
+        <span class="keyword">public</span> String url = <span class="literal">null</span>;
+
+        <span class="keyword">public</span> LoadImageTask(String url) {
+            <span class="keyword">this</span>.url = url;
+        }
+
+        @Override
+        <span class="keyword">protected</span> Bitmap doInBackground(String... params) {
+            <span class="keyword">if</span> (params.length == <span class="number">0</span>) {
+                <span class="keyword">return</span> <span class="literal">null</span>;
+            }
+
+            <span class="keyword">return</span> loadImageFromUrl(url);
+        }
+
+        @Override
+        <span class="keyword">protected</span> <span class="keyword">void</span> onPostExecute(Bitmap result) {
+
+            <span class="comment">//得到同样加载该url的imageViews</span>
+            List&lt;ImageView&gt; imageViews = <span class="keyword">new</span> ArrayList&lt;ImageView&gt;();
+            Set&lt;ImageView&gt; keys = mImageViews.keySet();
+            <span class="keyword">for</span> (ImageView imageView : keys) {
+                String string = mImageViews.<span class="keyword">get</span>(imageView);
+                <span class="keyword">if</span> (<span class="literal">null</span> != string &amp;&amp; string.equals(url)) {
+                    imageViews.add(imageView);
+                }
+            }
+
+
+            <span class="keyword">if</span>(<span class="literal">null</span> == result){
+                <span class="keyword">for</span> (ImageView imageView : imageViews) {
+                    mOnImageLoadListener.onLoadFailed(imageView);
+                }
+            }
+            <span class="keyword">else</span>{
+                <span class="keyword">for</span> (ImageView imageView : imageViews) {
+                    mOnImageLoadListener.onLoadSuccess(imageView, result);
+
+                }
+                mMemoryCache.put(url, result);
+                mFileCache.putFile(url, result);
+            }
+
+
+            synchronized (mImageViews) {
+                <span class="keyword">for</span> (ImageView imageView : imageViews) {
+                    mImageViews.remove(imageView);
+                }
+            }
+        }
+    }
+
+    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">onImageLoadListener</span> </span>{
+        <span class="keyword">void</span> onPreLoad(ImageView imageView);
+
+        <span class="keyword">void</span> onLoading(ImageView imageView); 
+        <span class="keyword">void</span> onLoadFailed(ImageView imageView);
+
+        <span class="keyword">void</span> onLoadSuccess(ImageView imageView, Bitmap bitmap);
+    }
+}
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" data-id="cicl7z6hl001v7wyah4oi0ri6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/二级缓存/">二级缓存</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图片加载/">图片加载</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-域名解析设置" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/27/域名解析设置/" class="article-date">
@@ -89,7 +915,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="cicipiy1w001wkcyamio32v0h" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/域名解析设置/" data-id="cicl7z6hy00237wyawufxv769" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名/">域名</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/域名解析/">域名解析</a></li></ul>
@@ -196,7 +1022,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="cicipiy030000kcyaee89pj2e" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/05/27/Java遍历集合过程并删除其中元素/" data-id="cicl7z6g000007wyap4twrudp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Exception/">Exception</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集合/">集合</a></li></ul>
@@ -223,7 +1049,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Canvas/">Canvas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HandlerThread/">HandlerThread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/drawText/">drawText</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/反射/">反射</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/百度/">百度</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Canvas/">Canvas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HandlerThread/">HandlerThread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/drawText/">drawText</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/中断/">中断</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/反射/">反射</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/百度/">百度</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -232,7 +1058,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncQueryHandler/" style="font-size: 10px;">AsyncQueryHandler</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/Canvas/" style="font-size: 10px;">Canvas</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Handler/" style="font-size: 10px;">Handler</a> <a href="/tags/HandlerThread/" style="font-size: 10px;">HandlerThread</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/drawText/" style="font-size: 10px;">drawText</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/反射/" style="font-size: 10px;">反射</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/百度/" style="font-size: 10px;">百度</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncQueryHandler/" style="font-size: 10px;">AsyncQueryHandler</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/Canvas/" style="font-size: 10px;">Canvas</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Handler/" style="font-size: 10px;">Handler</a> <a href="/tags/HandlerThread/" style="font-size: 10px;">HandlerThread</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/drawText/" style="font-size: 10px;">drawText</a> <a href="/tags/中断/" style="font-size: 10px;">中断</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/反射/" style="font-size: 10px;">反射</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/百度/" style="font-size: 10px;">百度</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
     </div>
   </div>
 
@@ -241,7 +1067,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -253,6 +1079,14 @@
       <ul>
         
           <li>
+            <a href="/2015/07/27/Java-线程终断/">Java 线程终断</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/25/AsyncTask并行问题/">AsyncTask并行问题</a>
+          </li>
+        
+          <li>
             <a href="/2015/07/25/百度面试记录/">百度面试记录</a>
           </li>
         
@@ -262,14 +1096,6 @@
         
           <li>
             <a href="/2015/07/20/Android-drawText函数中参数x-y坐标的理解/">Android drawText函数中参数x,y坐标的理解</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/16/Handler-HandlerThread-AsyncQueryHandler理解/">Handler HandlerThread AsyncQueryHandler理解</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/06/Binder-aidl理解/">Binder-aidl理解</a>
           </li>
         
       </ul>

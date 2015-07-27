@@ -3,17 +3,28 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Tag: 二级缓存 | wuhui&#39;s Blog</title>
+  <title>AsyncTask并行问题 | wuhui&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="此网站主要是记录平时工作和学习所用的技术要点">
-<meta property="og:type" content="website">
-<meta property="og:title" content="wuhui's Blog">
-<meta property="og:url" content="http://wuhuiheu.net/tags/二级缓存/index.html">
+  <meta name="description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候，面试官问到AsyncTask是否并行，当时我回答说不支持，然后面试官后来又质问了我，我还是肯定地回答说不支持。最后面试官跟我说，真实是支持的。今天有时间，我又看了下AsyncTask的源码又看了Android Doc。文档是这么说的。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;另外我再贴下AsyncTask的源码：
+publi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AsyncTask并行问题">
+<meta property="og:url" content="http://wuhuiheu.net/2015/07/25/AsyncTask并行问题/index.html">
 <meta property="og:site_name" content="wuhui's Blog">
-<meta property="og:description" content="此网站主要是记录平时工作和学习所用的技术要点">
+<meta property="og:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候，面试官问到AsyncTask是否并行，当时我回答说不支持，然后面试官后来又质问了我，我还是肯定地回答说不支持。最后面试官跟我说，真实是支持的。今天有时间，我又看了下AsyncTask的源码又看了Android Doc。文档是这么说的。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;另外我再贴下AsyncTask的源码：
+publi">
+<meta property="og:image" content="http://i.imgur.com/RzHygHY.jpg">
+<meta property="og:updated_time" content="2015-07-25T15:33:52.806Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="wuhui's Blog">
-<meta name="twitter:description" content="此网站主要是记录平时工作和学习所用的技术要点">
+<meta name="twitter:title" content="AsyncTask并行问题">
+<meta name="twitter:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候，面试官问到AsyncTask是否并行，当时我回答说不支持，然后面试官后来又质问了我，我还是肯定地回答说不支持。最后面试官跟我说，真实是支持的。今天有时间，我又看了下AsyncTask的源码又看了Android Doc。文档是这么说的。
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;另外我再贴下AsyncTask的源码：
+publi">
   
     <link rel="alternative" href="/atom.xml" title="wuhui&#39;s Blog" type="application/atom+xml">
   
@@ -59,39 +70,99 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2015" class="archive-year">2015</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/" class="archive-article-date">
-  <time datetime="2015-06-08T09:53:54.000Z" itemprop="datePublished">6月 8</time>
+        <section id="main"><article id="post-AsyncTask并行问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/25/AsyncTask并行问题/" class="article-date">
+  <time datetime="2015-07-25T15:02:46.000Z" itemprop="datePublished">2015-07-25</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2015/06/08/Android批量图片加载-采用二级缓存、异步加载网络图片/">Android批量图片加载--采用二级缓存、异步加载网络图片</a>
+    <h1 class="article-title" itemprop="name">
+      AsyncTask并行问题
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&nbsp;&nbsp;&nbsp;&nbsp;上次面试的时候，面试官问到AsyncTask是否并行，当时我回答说不支持，然后面试官后来又质问了我，我还是肯定地回答说不支持。最后面试官跟我说，真实是支持的。今天有时间，我又看了下AsyncTask的源码又看了Android Doc。文档是这么说的。</p>
+<p><img src="http://i.imgur.com/RzHygHY.jpg" alt="Order of execution"></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;另外我再贴下AsyncTask的源码：</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Executor SERIAL_EXECUTOR = <span class="keyword">new</span> SerialExecutor();
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Executor sDefaultExecutor = SERIAL_EXECUTOR;
+
+<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SerialExecutor</span> <span class="keyword">implements</span> <span class="title">Executor</span> </span>{
+    <span class="keyword">final</span> ArrayDeque&lt;Runnable&gt; mTasks = <span class="keyword">new</span> ArrayDeque&lt;Runnable&gt;();
+    Runnable mActive;
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(<span class="keyword">final</span> Runnable r)</span> </span>{
+        mTasks.offer(<span class="keyword">new</span> Runnable() {
+            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+                <span class="keyword">try</span> {
+                    r.run();
+                } <span class="keyword">finally</span> {
+                    scheduleNext();
+                }
+            }
+        });
+        <span class="keyword">if</span> (mActive == <span class="keyword">null</span>) {
+            scheduleNext();
+        }
+    }
+
+    <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">scheduleNext</span><span class="params">()</span> </span>{
+        <span class="keyword">if</span> ((mActive = mTasks.poll()) != <span class="keyword">null</span>) {
+            THREAD_POOL_EXECUTOR.execute(mActive);
+        }
+    }
+}
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;一般我们都会调用execute这个方法，但这方法都直接调用了<code>executeOnExecutor(sDefaultExecutor, params)</code>,但我们细读SerialExecutor会发现，扔进这里的任务真实是串行的</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;最像Doc里说的那样，如果你要并行执行任务地话，调用这个方法<code>executeOnExecutor(Executor exec, Params... params)</code>,但我们得提供方法第一个参数，好在AsyncTask已经帮我们初始了一个Executor:</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Executor THREAD_POOL_EXECUTOR
+        = <span class="keyword">new</span> ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
+                TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://blog.csdn.net/hpb21/article/details/26965169" title="Android源码分析—带你认识不一样的AsyncTask(串并行)" target="_blank" rel="external">http://blog.csdn.net/hpb21/article/details/26965169</a>，这篇文章写地很好。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;所以说，源码还是得多读，读懂。不要只知道一方面，要全盘掌握！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/07/25/AsyncTask并行问题/" data-id="cicl7z6gj000k7wyauhg2hycw" class="article-share-link">Share</a>
+      
+      
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/07/27/Java-线程终断/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Java 线程终断
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/07/25/百度面试记录/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">百度面试记录</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">
