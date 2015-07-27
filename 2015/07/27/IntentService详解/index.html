@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>IntentService详解 | wuhui&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候第二个面试官问我IntentService，遗憾当时不知IntentService是阿方神圣。今天特学习一下。
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;先上一段官网的简介：
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;通过上面简介可知，IntentService是继承于Service的，用于处理异步请求的，我们通过实现On">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IntentService详解">
+<meta property="og:url" content="http://wuhuiheu.net/2015/07/27/IntentService详解/index.html">
+<meta property="og:site_name" content="wuhui's Blog">
+<meta property="og:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候第二个面试官问我IntentService，遗憾当时不知IntentService是阿方神圣。今天特学习一下。
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;先上一段官网的简介：
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;通过上面简介可知，IntentService是继承于Service的，用于处理异步请求的，我们通过实现On">
+<meta property="og:image" content="http://wuhuiheu.net/IntentService-Overview.png">
+<meta property="og:updated_time" content="2015-07-27T09:05:51.957Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IntentService详解">
+<meta name="twitter:description" content="&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;上次面试的时候第二个面试官问我IntentService，遗憾当时不知IntentService是阿方神圣。今天特学习一下。
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;先上一段官网的简介：
+
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;通过上面简介可知，IntentService是继承于Service的，用于处理异步请求的，我们通过实现On">
+  
+    <link rel="alternative" href="/atom.xml" title="wuhui&#39;s Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">wuhui&#39;s Blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://wuhuiheu.net"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-IntentService详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/27/IntentService详解/" class="article-date">
+  <time datetime="2015-07-27T08:25:22.000Z" itemprop="datePublished">2015-07-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      IntentService详解
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&nbsp;&nbsp;&nbsp;&nbsp;上次面试的时候第二个面试官问我IntentService，遗憾当时不知IntentService是阿方神圣。今天特学习一下。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;先上一段官网的简介：</p>
+<p><img src="IntentService-Overview.png" alt=""></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;通过上面简介可知，IntentService是继承于Service的，用于处理异步请求的，我们通过实现OnHandleIntent处理我们的逻辑，处理完之后，stop自己。其实通过阅读源码我们可以发现，IntentService内部实例了一个HandlerThread，我们start IntentService，请求的任务都是在那个HandlerThread处理。IntentService源码片段如下：</p>
+<pre><code><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>{
+    <span class="function"><span class="keyword">public</span> <span class="title">ServiceHandler</span><span class="params">(Looper looper)</span> </span>{
+        <span class="keyword">super</span>(looper);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>{
+        onHandleIntent((Intent)msg.obj);
+        stopSelf(msg.arg1);
+    }
+}
+
+<span class="annotation">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>{
+    <span class="keyword">super</span>.onCreate();
+    <span class="comment">//初始了一个HandlerThread</span>
+    HandlerThread thread = <span class="keyword">new</span> HandlerThread(<span class="string">"IntentService["</span> + mName + <span class="string">"]"</span>);
+    thread.start();
+
+    mServiceLooper = thread.getLooper();
+    <span class="comment">//根据HandlerThread中的Looper初始了一个Handler</span>
+    mServiceHandler = <span class="keyword">new</span> ServiceHandler(mServiceLooper);
+}
+
+<span class="annotation">@Override</span>
+<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">(Intent intent, <span class="keyword">int</span> startId)</span> </span>{
+    Message msg = mServiceHandler.obtainMessage();
+    msg.arg1 = startId;
+    msg.obj = intent;
+    mServiceHandler.sendMessage(msg);
+}
+
+<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">onStartCommand</span><span class="params">(Intent intent, <span class="keyword">int</span> flags, <span class="keyword">int</span> startId)</span> </span>{
+    onStart(intent, startId);
+    <span class="keyword">return</span> mRedelivery ? START_REDELIVER_INTENT : START_NOT_STICKY;
+}
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;下面写一些代码实践刚学的知识，顺带复习一下HandlerThread的使用方法.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;首先定义一个IntentService。</p>
+<pre><code><span class="keyword">package</span> com.example.handlerthreaddemo;
+
+<span class="keyword">import</span> java.util.concurrent.<span class="type">TimeUnit</span>;
+
+<span class="keyword">import</span> android.app.<span class="type">IntentService</span>;
+<span class="keyword">import</span> android.content.<span class="type">Intent</span>;
+<span class="keyword">import</span> android.util.<span class="type">Log</span>;
+
+public <span class="class"><span class="keyword">class</span> <span class="title">MyIntentService</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">IntentService</span> {</span>
+
+    <span class="comment">//必须实现一个默认构造方法</span>
+    public <span class="type">MyIntentService</span>() {
+        <span class="keyword">super</span>(<span class="string">"MyIntentService"</span>);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="keyword">protected</span> void onHandleIntent(<span class="type">Intent</span> intent) {
+        <span class="keyword">try</span> {
+            <span class="type">Log</span>.d(<span class="string">"ljhtest"</span>, <span class="string">"开始sleep 30秒"</span>);
+            <span class="type">TimeUnit</span>.<span class="type">SECONDS</span>.sleep(<span class="number">30</span>);
+            <span class="type">Log</span>.d(<span class="string">"ljhtest"</span>, <span class="string">"结束sleep 30秒"</span>);
+        } <span class="keyword">catch</span> (<span class="type">InterruptedException</span> e) {
+            <span class="type">Log</span>.d(<span class="string">"ljhtest"</span>, <span class="string">"onHandleIntent发生异常"</span>);
+        }
+
+    }
+
+}
+</code></pre><p>&nbsp;&nbsp;&nbsp;&nbsp;接着写MainActivity。</p>
+<pre><code>package com.example.handlerthreaddemo;
+
+<span class="built_in">import</span> android.app.Activity;
+<span class="built_in">import</span> android.content.Intent;
+<span class="built_in">import</span> android.os.Bundle;
+<span class="built_in">import</span> android.os.Handler;
+<span class="built_in">import</span> android.os.Handler.Callback;
+<span class="built_in">import</span> android.os.HandlerThread;
+<span class="built_in">import</span> android.os.Message;
+<span class="built_in">import</span> android.view.View;
+<span class="built_in">import</span> android.view.View.OnClickListener;
+<span class="built_in">import</span> android.widget.Toast;
+
+public class MainActivity extends Activity {
+
+    private Handler.Callback mSubCallback = new Callback<span class="params">()</span> {
+
+        @Override
+        public boolean handleMessage<span class="params">(Message msg)</span> {
+            StringBuffer sb = new StringBuffer<span class="params">()</span>;
+            sb.append<span class="params">(<span class="string">"mSubCallback回调\n"</span>)</span>.append<span class="params">(<span class="string">"what:"</span>)</span>.append<span class="params">(msg.what)</span>.append<span class="params">(<span class="string">"\n"</span>)</span>;
+            sb.append<span class="params">(<span class="string">"currentThread:"</span> + Thread.currentThread<span class="params">()</span>.getName<span class="params">()</span>)</span>;
+            Toast.makeText<span class="params">(MainActivity.this, sb.toString<span class="params">()</span>, Toast.LENGTH_LONG)</span>.show<span class="params">()</span>;
+
+            return <span class="literal">true</span>;
+        }
+    };
+
+    private Handler mSubHandler;
+
+    @Override
+    protected void onCreate<span class="params">(Bundle savedInstanceState)</span> {
+        super.onCreate<span class="params">(savedInstanceState)</span>;
+        setContentView<span class="params">(R.layout.activity_main)</span>;
+
+        HandlerThread handlerThread = new HandlerThread<span class="params">(<span class="string">"HandlerThread"</span>)</span>;
+        handlerThread.start<span class="params">()</span>;
+
+        mSubHandler = new Handler<span class="params">(handlerThread.getLooper<span class="params">()</span>, mSubCallback)</span>;
+
+        findViewById<span class="params">(R.id.btn_send_message)</span>.setOnClickListener<span class="params">(mOnClickListener)</span>;
+
+        findViewById<span class="params">(R.id.btn_begin_intentservice)</span>.setOnClickListener<span class="params">(mOnClickListener)</span>;
+    }
+
+    private OnClickListener mOnClickListener = new OnClickListener<span class="params">()</span> {
+
+        @Override
+        public void onClick<span class="params">(View v)</span> {
+            <span class="keyword">if</span> <span class="params">(v.getId<span class="params">()</span> == R.id.btn_send_message)</span> {
+                mSubHandler.sendEmptyMessage<span class="params">(<span class="number">0</span>)</span>;
+            }
+            <span class="keyword">else</span> <span class="keyword">if</span> <span class="params">(v.getId<span class="params">()</span> == R.id.btn_begin_intentservice)</span> {
+                Intent intent = new Intent<span class="params">(MainActivity.this, MyIntentService.class)</span>;
+                startService<span class="params">(intent)</span>;
+            }
+
+        }
+    };
+}
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/07/27/IntentService详解/" data-id="ciclozzn6000fn4ya481epc8b" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HandlerThread/">HandlerThread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IntentService/">IntentService</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/07/27/Java-线程终断/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Java 线程终断</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Canvas/">Canvas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HandlerThread/">HandlerThread</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IntentService/">IntentService</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/drawText/">drawText</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/中断/">中断</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/反射/">反射</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/百度/">百度</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncQueryHandler/" style="font-size: 10px;">AsyncQueryHandler</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/Canvas/" style="font-size: 10px;">Canvas</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Handler/" style="font-size: 10px;">Handler</a> <a href="/tags/HandlerThread/" style="font-size: 13.33px;">HandlerThread</a> <a href="/tags/IntentService/" style="font-size: 10px;">IntentService</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/drawText/" style="font-size: 10px;">drawText</a> <a href="/tags/中断/" style="font-size: 10px;">中断</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/反射/" style="font-size: 10px;">反射</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/百度/" style="font-size: 10px;">百度</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/07/27/IntentService详解/">IntentService详解</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/27/Java-线程终断/">Java 线程终断</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/25/AsyncTask并行问题/">AsyncTask并行问题</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/25/百度面试记录/">百度面试记录</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/21/Java反射知识/">Java反射知识</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 刘俊辉<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
