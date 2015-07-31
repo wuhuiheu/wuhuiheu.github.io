@@ -61,6 +61,45 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-listview等item显示不同的view" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/31/listview等item显示不同的view/" class="article-date">
+  <time datetime="2015-07-31T09:07:45.000Z" itemprop="datePublished">2015-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/31/listview等item显示不同的view/">listview等item显示不同的view</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>有时会有这样的需求，listview根据不同postion显示不同的视图，例如微信的聊天界面，自己的聊天信息在左边，对方在右边。对于这个问题，我们可以重写BaseAdapter中的<code>int getItemViewType(int position)</code>以及<code>int getViewTypeCount()</code>的方法。前一个方法返回将要被创造的view的类型，后一个返回view的类型数。然后在<code>getView</code>的时候，调用<code>getItemViewType</code>，根据不同类型，初始不同的视图。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wuhuiheu.net/2015/07/31/listview等item显示不同的view/" data-id="cicrf204q00096gya3i360brl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/BaseAdapter/">BaseAdapter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ListView/">ListView</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-WebView小试" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/28/WebView小试/" class="article-date">
@@ -228,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/28/WebView小试/" data-id="cicn4x64v0009w0yays6f77s4" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/28/WebView小试/" data-id="cicrf204u000g6gya4rk51t6z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WebView/">WebView</a></li></ul>
@@ -397,7 +436,7 @@ public class MainActivity extends Activity {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/27/IntentService详解/" data-id="cicn4x650000kw0ya7wp13lsn" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/27/IntentService详解/" data-id="cicrf2056000q6gya5uyc8vl0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HandlerThread/">HandlerThread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IntentService/">IntentService</a></li></ul>
@@ -727,7 +766,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/27/Java-线程终断/" data-id="cicn4x64y000ew0yabjt0r9yf" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/27/Java-线程终断/" data-id="cicrf2052000k6gya848hdmct" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Thread/">Thread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/中断/">中断</a></li></ul>
@@ -803,7 +842,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/25/AsyncTask并行问题/" data-id="cicn4x65i000ww0yaxgt9c20d" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/25/AsyncTask并行问题/" data-id="cicrf205i00126gyaz2dpynyy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -879,7 +918,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/25/百度面试记录/" data-id="cicn4x65d000qw0yaf6b1p6s0" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/25/百度面试记录/" data-id="cicrf205f000w6gya4bl5ot1p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/百度/">百度</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/面试/">面试</a></li></ul>
@@ -918,7 +957,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/21/Java反射知识/" data-id="cicn4x65m000xw0yaltrcvox0" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/21/Java反射知识/" data-id="cicrf205l00136gya0aybghoh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/反射/">反射</a></li></ul>
@@ -960,7 +999,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/20/Android-drawText函数中参数x-y坐标的理解/" data-id="cicn4x65p0011w0ya2evu25a7" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/20/Android-drawText函数中参数x-y坐标的理解/" data-id="cicrf205o00176gya5cr1qizb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Canvas/">Canvas</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/drawText/">drawText</a></li></ul>
@@ -1021,7 +1060,7 @@ Main <span class="keyword">Thread</span> create <span class="keyword">thread</sp
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/16/Handler-HandlerThread-AsyncQueryHandler理解/" data-id="cicn4x65v0017w0ya3gd2cbmh" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/16/Handler-HandlerThread-AsyncQueryHandler理解/" data-id="cicrf205u001d6gyakw3g0ivt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Handler/">Handler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HandlerThread/">HandlerThread</a></li></ul>
@@ -1207,52 +1246,10 @@ public <span class="class"><span class="keyword">class</span> <span class="title
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/06/Binder-aidl理解/" data-id="cicn4x660001ew0ya7tbiam2b" class="article-share-link">Share</a>
+      <a data-url="http://wuhuiheu.net/2015/07/06/Binder-aidl理解/" data-id="cicrf205x001k6gya2tglhn57" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AIDL/">AIDL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Binder/">Binder</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代理模式/">代理模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/" class="article-date">
-  <time datetime="2015-07-02T08:11:04.000Z" itemprop="datePublished">2015-07-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/">Fragment与大数据缓存及屏幕旋转 加载数据的AsyncTask</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>理论基础请看如下两篇博客：</p>
-<p><a href="http://blog.csdn.net/airk000/article/details/38669959" target="_blank" rel="external">http://blog.csdn.net/airk000/article/details/38669959</a></p>
-<p><a href="http://blog.csdn.net/airk000/article/details/38557605" target="_blank" rel="external">http://blog.csdn.net/airk000/article/details/38557605</a></p>
-<p>应用场景可看如下博客:<br><a href="http://blog.csdn.net/lmj623565791/article/details/37936275" target="_blank" rel="external">http://blog.csdn.net/lmj623565791/article/details/37936275</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://wuhuiheu.net/2015/07/02/Fragment与大数据缓存及屏幕旋转-加载数据的AsyncTask/" data-id="cicn4x664001mw0yabd3m5zui" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AsyncTask/">AsyncTask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Fragment/">Fragment</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a></li></ul>
 
     </footer>
   </div>
@@ -1276,7 +1273,7 @@ public <span class="class"><span class="keyword">class</span> <span class="title
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Canvas/">Canvas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HandlerThread/">HandlerThread</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IntentService/">IntentService</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WebView/">WebView</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/drawText/">drawText</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/中断/">中断</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/反射/">反射</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/百度/">百度</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AIDL/">AIDL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncQueryHandler/">AsyncQueryHandler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AsyncTask/">AsyncTask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/BaseAdapter/">BaseAdapter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Binder/">Binder</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Canvas/">Canvas</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ConcurrentModificationException/">ConcurrentModificationException</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ContentProvider/">ContentProvider</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Exception/">Exception</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fragment/">Fragment</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Handler/">Handler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HandlerThread/">HandlerThread</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IntentService/">IntentService</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ListView/">ListView</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WebView/">WebView</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/drawText/">drawText</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/中断/">中断</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/二级缓存/">二级缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理模式/">代理模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/侧边栏/">侧边栏</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/反射/">反射</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图片加载/">图片加载</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名解析/">域名解析</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/屏幕旋转/">屏幕旋转</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/异步加载网络图片/">异步加载网络图片</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/百度/">百度</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/集合/">集合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/面试/">面试</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1285,7 +1282,7 @@ public <span class="class"><span class="keyword">class</span> <span class="title
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncQueryHandler/" style="font-size: 10px;">AsyncQueryHandler</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/Canvas/" style="font-size: 10px;">Canvas</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Handler/" style="font-size: 10px;">Handler</a> <a href="/tags/HandlerThread/" style="font-size: 13.33px;">HandlerThread</a> <a href="/tags/IntentService/" style="font-size: 10px;">IntentService</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/WebView/" style="font-size: 10px;">WebView</a> <a href="/tags/drawText/" style="font-size: 10px;">drawText</a> <a href="/tags/中断/" style="font-size: 10px;">中断</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/反射/" style="font-size: 10px;">反射</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/百度/" style="font-size: 10px;">百度</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
+      <a href="/tags/AIDL/" style="font-size: 10px;">AIDL</a> <a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/AsyncQueryHandler/" style="font-size: 10px;">AsyncQueryHandler</a> <a href="/tags/AsyncTask/" style="font-size: 10px;">AsyncTask</a> <a href="/tags/BaseAdapter/" style="font-size: 10px;">BaseAdapter</a> <a href="/tags/Binder/" style="font-size: 10px;">Binder</a> <a href="/tags/Canvas/" style="font-size: 10px;">Canvas</a> <a href="/tags/ConcurrentModificationException/" style="font-size: 10px;">ConcurrentModificationException</a> <a href="/tags/ContentProvider/" style="font-size: 10px;">ContentProvider</a> <a href="/tags/Exception/" style="font-size: 10px;">Exception</a> <a href="/tags/Fragment/" style="font-size: 10px;">Fragment</a> <a href="/tags/Handler/" style="font-size: 10px;">Handler</a> <a href="/tags/HandlerThread/" style="font-size: 13.33px;">HandlerThread</a> <a href="/tags/IntentService/" style="font-size: 10px;">IntentService</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/ListView/" style="font-size: 10px;">ListView</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/UML/" style="font-size: 10px;">UML</a> <a href="/tags/WebView/" style="font-size: 10px;">WebView</a> <a href="/tags/drawText/" style="font-size: 10px;">drawText</a> <a href="/tags/中断/" style="font-size: 10px;">中断</a> <a href="/tags/二级缓存/" style="font-size: 10px;">二级缓存</a> <a href="/tags/代理模式/" style="font-size: 10px;">代理模式</a> <a href="/tags/侧边栏/" style="font-size: 10px;">侧边栏</a> <a href="/tags/反射/" style="font-size: 10px;">反射</a> <a href="/tags/图片加载/" style="font-size: 10px;">图片加载</a> <a href="/tags/域名/" style="font-size: 10px;">域名</a> <a href="/tags/域名解析/" style="font-size: 10px;">域名解析</a> <a href="/tags/屏幕旋转/" style="font-size: 10px;">屏幕旋转</a> <a href="/tags/异步加载网络图片/" style="font-size: 10px;">异步加载网络图片</a> <a href="/tags/百度/" style="font-size: 10px;">百度</a> <a href="/tags/集合/" style="font-size: 10px;">集合</a> <a href="/tags/面试/" style="font-size: 10px;">面试</a>
     </div>
   </div>
 
@@ -1294,7 +1291,7 @@ public <span class="class"><span class="keyword">class</span> <span class="title
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/06/">六月 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -1304,6 +1301,10 @@ public <span class="class"><span class="keyword">class</span> <span class="title
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/07/31/listview等item显示不同的view/">listview等item显示不同的view</a>
+          </li>
         
           <li>
             <a href="/2015/07/28/WebView小试/">WebView小试</a>
@@ -1319,10 +1320,6 @@ public <span class="class"><span class="keyword">class</span> <span class="title
         
           <li>
             <a href="/2015/07/25/AsyncTask并行问题/">AsyncTask并行问题</a>
-          </li>
-        
-          <li>
-            <a href="/2015/07/25/百度面试记录/">百度面试记录</a>
           </li>
         
       </ul>
